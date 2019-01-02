@@ -9,18 +9,17 @@ use Symfony\Component\Console\Question\Question;
 class CreateCommand extends Command
 {
     /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'templates:create {--force}';
-
-    /**
      * The console command description.
      *
      * @var string
      */
     protected $description = 'Create monitoring templates';
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'templates:create {--force}';
 
     /**
      * @var Client

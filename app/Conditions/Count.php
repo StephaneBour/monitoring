@@ -5,6 +5,19 @@ namespace App\Conditions;
 class Count
 {
     /**
+     * Equal.
+     *
+     * @param int $value
+     * @param int $compare
+     *
+     * @return bool
+     */
+    public static function equal(int $value, int $compare): bool
+    {
+        return $value === $compare;
+    }
+
+    /**
      * Greater than.
      *
      * @param int $value
@@ -54,19 +67,6 @@ class Count
     public static function lte(int $value, int $compare): bool
     {
         return $value <= $compare;
-    }
-
-    /**
-     * Equal.
-     *
-     * @param int $value
-     * @param int $compare
-     *
-     * @return bool
-     */
-    public static function equal(int $value, int $compare): bool
-    {
-        return $value === $compare;
     }
 
     /**

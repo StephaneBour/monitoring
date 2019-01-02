@@ -43,6 +43,18 @@ class Generic implements Connection
         return true;
     }
 
+    public function checkThrottle(): bool
+    {
+    }
+
+    public function condition(): bool
+    {
+    }
+
+    public function exec()
+    {
+    }
+
     public function generateQuery(): array
     {
     }
