@@ -46,7 +46,7 @@ class ElasticsearchTest extends TestCase
             ],
             'condition' => [
                 'count' => [
-                    'gt' => 0,
+                    'gt' => 31,
                 ],
             ],
             'throttle_period' => 60,
@@ -97,5 +97,11 @@ class ElasticsearchTest extends TestCase
     public function testExec()
     {
         $this->assertGreaterThan(9, $this->connection->exec());
+    }
+
+    public function testCondition()
+    {
+        $this->connection->exec();
+        $this->assertTrue($this->connection->condition());
     }
 }
