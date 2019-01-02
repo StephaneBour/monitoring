@@ -6,6 +6,13 @@ use App\Helpers\IndexHelper;
 
 class Elasticsearch extends Generic
 {
+    /**
+     * Elasticsearch constructor.
+     *
+     * @param array $config
+     *
+     * @throws \Exception
+     */
     public function __construct(array $config)
     {
         $this->_config = $config;
@@ -34,6 +41,9 @@ class Elasticsearch extends Generic
         return $query;
     }
 
+    /**
+     * @return int
+     */
     public function exec()
     {
         switch ($this->_config['input']['mode']) {
@@ -42,5 +52,21 @@ class Elasticsearch extends Generic
         }
 
         return $this->_result;
+    }
+
+    /**
+     * Check if the return fulfill the condition.
+     *
+     * @return bool
+     */
+    public function condition()
+    {
+        reset($this->_config['condition']);
+        $mode = key($this->_config['condition']);
+        $class = '\App\Conditions\\' . ucfirst(strtolower($mode));
+        reset($this->_config['condition'][$mode]);
+        $method = key($this->_config['condition'][$mode]);
+
+        return $class::$method($this->_result, $this->_config['condition'][$mode][$method]);
     }
 }
