@@ -14,6 +14,13 @@ class CountTest extends TestCase
         $this->_app = $this->createApplication();
     }
 
+    public function testCountEqual()
+    {
+        $this->assertFalse(Count::equal(4, 10));
+        $this->assertFalse(Count::equal(10, 4));
+        $this->assertTrue(Count::equal(10, 10));
+    }
+
     public function testCountGt()
     {
         $this->assertTrue(Count::gt(10, 4));
@@ -40,13 +47,6 @@ class CountTest extends TestCase
         $this->assertTrue(Count::lte(4, 10));
         $this->assertFalse(Count::lte(10, 4));
         $this->assertTrue(Count::lte(10, 10));
-    }
-
-    public function testCountEqual()
-    {
-        $this->assertFalse(Count::equal(4, 10));
-        $this->assertFalse(Count::equal(10, 4));
-        $this->assertTrue(Count::equal(10, 10));
     }
 
     public function testCountRange()
