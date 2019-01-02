@@ -1,0 +1,44 @@
+language: php
+services:
+- elasticsearch
+php:
+- 7.2
+- 7.3
+
+stages:
+- PHP Lint
+- PHP CS Fixer
+- PHPCPD
+- PHPMetrics
+
+install: travis_retry composer install
+
+script:
+- "./vendor/bin/phpunit"
+
+jobs:
+  include:
+  - stage: PHP Lint
+    install: travis_retry composer install
+    script:
+    - if find . -type f -name "*.php" ! -path "./vendor/*" | xargs -n 1 -P 8 -I % php -d error_reporting=32767 -l % \; 2>&1 >&- | grep "^" ; then exit 1; fi
+  - stage: PHP CS Fixer
+    install:
+    - phpenv config-rm xdebug.ini
+    - travis_retry composer install
+    script:
+    - vendor/bin/php-cs-fixer fix --dry-run -v --show-progress=dots --diff-format=udiff
+  - stage: PHPCPD
+    install:
+    - wget https://phar.phpunit.de/phpcpd.phar
+    - chmod +x phpcpd.phar
+    - travis_retry composer install
+    script:
+    - ./phpcpd.phar app
+  - stage: PHPMetrics
+    install:
+    - wget https://github.com/phpmetrics/PhpMetrics/raw/master/build/phpmetrics.phar
+    - chmod +x phpmetrics.phar
+    - travis_retry composer install
+    script:
+    - ./phpmetrics.phar --failure-conditions="average.maintainabilityIndex < 50 or sum.loc > 10000" app
