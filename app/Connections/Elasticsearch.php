@@ -16,15 +16,83 @@ class Elasticsearch extends Generic
     public function __construct(array $config)
     {
         $this->_config = $config;
-        $this->_requiredKeys = ['input' => ['index', 'type', 'frequence', 'mode', 'query'], 'condition', 'throttle_period', 'actions', 'enabled'];
+        $this->_requiredKeys = ['input' => ['index', 'type', 'frequence', 'mode', 'query'], 'condition', 'throttle_period', 'actions', 'enabled', 'uuid'];
         $this->checkConfig();
         $this->generateQuery();
     }
 
+    public function checkThrottle(): bool
+    {
+        if (! app('elasticsearch')->indices()->exists(['index' => IndexHelper::generateResultIndex()])) {
+            app('elasticsearch')->indices()->create(['index' => IndexHelper::generateResultIndex()]);
+        }
+        // Last ?
+        $query = [
+            'index' => IndexHelper::generateResultIndex(),
+            'type' => 'doc',
+            'body' => [
+                'query' => [
+                    'bool' => [
+                        'filter' => [
+                            [
+                                'range' => [
+                                    'date' => [
+                                        'from' => 'now-' . $this->_config['throttle_period'],
+                                    ],
+                                ],
+                            ], [
+                                'match' => [
+                                    'monitoring_id' => $this->_config['uuid'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        if (intval(app('elasticsearch')->count($query)['count']) > 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     /**
+     * Check if the return fulfill the condition.
+     *
+     * @return bool
+     */
+    public function condition(): bool
+    {
+        reset($this->_config['condition']);
+        $mode = key($this->_config['condition']);
+        $class = '\App\Conditions\\' . ucfirst(strtolower($mode));
+        reset($this->_config['condition'][$mode]);
+        $method = key($this->_config['condition'][$mode]);
+
+        return $class::$method($this->_result, $this->_config['condition'][$mode][$method]);
+    }
+
+    /**
+     * @return int
+     */
+    public function exec()
+    {
+        switch ($this->_config['input']['mode']) {
+            case 'count':
+                $this->_result = intval(app('elasticsearch')->count($this->generateQuery())['count']);
+        }
+
+        return $this->_result;
+    }
+
+    /**
+     * Generate Elasticsearch Query.
+     *
      * @return array|void
      */
-    public function generateQuery():array
+    public function generateQuery(): array
     {
         $query = [
             'index' => IndexHelper::generateIndex($this->_config['input']['index'], $this->_config['input']['frequence'], (! empty($this->_config['input']['separator'])) ? $this->_config['input']['separator'] : null),
@@ -42,31 +110,31 @@ class Elasticsearch extends Generic
     }
 
     /**
-     * @return int
-     */
-    public function exec()
-    {
-        switch ($this->_config['input']['mode']) {
-            case 'count':
-                $this->_result = intval(app('elasticsearch')->count($this->generateQuery())['count']);
-        }
-
-        return $this->_result;
-    }
-
-    /**
-     * Check if the return fulfill the condition.
+     * Launch a complete test.
      *
      * @return bool
      */
-    public function condition()
+    public function launch():bool
     {
-        reset($this->_config['condition']);
-        $mode = key($this->_config['condition']);
-        $class = '\App\Conditions\\' . ucfirst(strtolower($mode));
-        reset($this->_config['condition'][$mode]);
-        $method = key($this->_config['condition'][$mode]);
+        if ($this->_config['enabled']) {
+            if ($this->checkThrottle()) {
+                $this->updateCheckStatus(self::STATUS_WAITING);
+                $this->exec();
 
-        return $class::$method($this->_result, $this->_config['condition'][$mode][$method]);
+                if ($this->condition()) {
+                    $this->updateCheckStatus(self::STATUS_OK, $this->_result);
+
+                    return true;
+                } else {
+                    $this->updateCheckStatus(self::STATUS_FAIL, $this->_result);
+
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }

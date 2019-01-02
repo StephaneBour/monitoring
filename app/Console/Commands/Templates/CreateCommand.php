@@ -110,9 +110,10 @@ class CreateCommand extends Command
                                 'dynamic' => true,
                             ],
                             'throttle_period' => [
-                                'type' => 'long',
-                                'index' => false,
-                                'doc_values' => false,
+                                'type' => 'keyword',
+                            ],
+                            'uuid' => [
+                                'type' => 'keyword',
                             ],
                             'actions' => [
                                 'type' => 'object',
@@ -162,13 +163,20 @@ class CreateCommand extends Command
                             'monitoring_id' => [
                                 'type' => 'keyword',
                             ],
-                            'result' => [
-                                'type' => 'boolean',
+                            'status' => [
+                                'type' => 'keyword',
                             ],
-                            'raw' => [
+                            'result' => [
                                 'type' => 'object',
                                 'enabled' => false,
                                 'dynamic' => true,
+                            ],
+                            'date' => [
+                                'type' => 'date',
+                                'format' => 'yyyy-MM-dd HH:mm:ss',
+                            ],
+                            'raw' => [
+                                'type' => 'keyword',
                             ],
                         ],
                     ],

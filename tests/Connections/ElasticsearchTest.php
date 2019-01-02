@@ -21,59 +21,32 @@ class ElasticsearchTest extends TestCase
     public function setUp()
     {
         $this->_app = $this->createApplication();
-        $this->connection = new Elasticsearch([
-            'enabled' => true,
-            'input' => [
-                'connection' => 'elasticsearch',
-                'index' => 'attractions',
-                'type' => 'doc',
-                'frequence' => 'monthly',
-                'separator' => '-',
-                'mode' => 'count',
-                'query' => [
-                    'bool' => [
-                        'filter' => [
-                            [
-                                'range' => [
-                                    'date' => [
-                                        'from' => 'now-2h',
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            'condition' => [
-                'count' => [
-                    'gt' => 31,
-                ],
-            ],
-            'throttle_period' => 60,
-            'actions' => [
-                'slack' => [
-                    'color' => '#F00',
-                    'text' => 'Attention, plus de log des attractions disney',
-                ],
-                'email' => [
-                    'to' => 'stephane.bour@gmail.com',
-                    'subject' => 'Attention, plus de log des attractions disney',
-                    'text' => 'Attention, plus de log des attractions disney',
-                ],
-            ],
-        ]);
 
         if (env('ELASTICSEARCH_TESTS', false) === true) {
             // Template
             Artisan::call('templates:create', ['--force' => true]);
 
             // Fixture Attractions
+            if (! ElasticsearchFacade::indices()->exists(['index' => IndexHelper::generateMonitoringIndex()])) {
+                ElasticsearchFacade::indices()->create(['index' => IndexHelper::generateMonitoringIndex()]);
+                ElasticsearchFacade::indices()->refresh(['index' => IndexHelper::generateMonitoringIndex()]);
+            }
+            ElasticsearchFacade::index(['index' => IndexHelper::generateMonitoringIndex(), 'type' => 'doc', 'id' => 'test_attractions', 'body' => Attractions::monitoring()]);
+
             if (! ElasticsearchFacade::indices()->exists(['index' => IndexHelper::generateIndex('attractions', 'monthly', '-')])) {
                 ElasticsearchFacade::indices()->create(['index' => IndexHelper::generateIndex('attractions', 'monthly', '-')]);
             }
             ElasticsearchFacade::indices()->putTemplate(['name' => 'attractions', 'body' => Attractions::template()]);
             ElasticsearchFacade::bulk(Attractions::data(10));
         }
+
+        $this->connection = new Elasticsearch(Attractions::monitoring());
+    }
+
+    public function testCondition()
+    {
+        $this->connection->exec();
+        $this->assertTrue($this->connection->condition());
     }
 
     public function testConfig()
@@ -86,6 +59,11 @@ class ElasticsearchTest extends TestCase
         }
     }
 
+    public function testExec()
+    {
+        $this->assertGreaterThan(9, $this->connection->exec());
+    }
+
     public function testGenerateQuery()
     {
         $query = $this->connection->generateQuery();
@@ -94,14 +72,16 @@ class ElasticsearchTest extends TestCase
         $this->assertArrayHasKey('body', $query);
     }
 
-    public function testExec()
+    public function testLaunch()
     {
-        $this->assertGreaterThan(9, $this->connection->exec());
+        $status = $this->connection->launch();
+        // TODO : clarifier le test
+        $this->assertTrue($status);
     }
 
-    public function testCondition()
+    public function testThrottle()
     {
-        $this->connection->exec();
-        $this->assertTrue($this->connection->condition());
+        $status = $this->connection->checkThrottle();
+        $this->assertIsBool($status);
     }
 }

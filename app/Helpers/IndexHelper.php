@@ -26,6 +26,16 @@ class IndexHelper
     }
 
     /**
+     * returns the name of monitoring index.
+     *
+     * @return string
+     */
+    public static function generateMonitoringIndex()
+    {
+        return config('elasticsearch.index.name');
+    }
+
+    /**
      * returns the name of the results index.
      *
      * @return string

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4aed9a2e577b5e2c13b641064dd4b490",
+    "content-hash": "fa4e1dd75c9e0f33f2d00ad32f75e1e4",
     "packages": [
         {
             "name": "cviebrock/laravel-elasticsearch",
