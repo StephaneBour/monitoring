@@ -3,6 +3,8 @@
 namespace App\Actions;
 
 use App\Interfaces\Action;
+use App\Mail\Alert;
+use Illuminate\Support\Facades\Mail;
 
 class Email implements Action
 {
@@ -15,5 +17,6 @@ class Email implements Action
 
     public function send()
     {
+        Mail::send(new Alert($this->_config));
     }
 }

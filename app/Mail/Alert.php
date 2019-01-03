@@ -29,6 +29,11 @@ class Alert extends Mailable
      */
     public function build()
     {
-        return $this->view('emails.alert', ['config' => $this->_config]);
+        return $this->subject($this->_config['subject'])
+                ->to($this->_config['to'])
+                ->view('emails.alert', [
+                    'text' => $this->_config['text'],
+                    'status' => $this->_config['status'],
+                ]);
     }
 }
