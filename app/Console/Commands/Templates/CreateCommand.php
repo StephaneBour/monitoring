@@ -45,7 +45,6 @@ class CreateCommand extends Command
      */
     public function handle()
     {
-        // TODO : export monitoring, delete index, import for recreate index
         $this->_monitoringIndex();
         $this->_monitoringResultsIndex();
     }
