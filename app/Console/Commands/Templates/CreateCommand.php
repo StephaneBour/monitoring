@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Templates;
 
+use App\Helpers\IndexHelper;
 use Elasticsearch\Client;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Question\Question;
@@ -54,6 +55,31 @@ class CreateCommand extends Command
      */
     private function _checkIfExist(string $index): void
     {
+        $this->output->writeln('Check if ' . $index . ' exists');
+        if ($this->_elastic->indices()->exists(['index' => $index]) === true && $this->option('force') == false) {
+            $anwser = $this->output->askQuestion(new Question('Index `' . $index . '` exists. Want to reindex with the new mapping ? Y/n', 'n'));
+            if ($anwser == 'Y') {
+                $new_index = $index . '_' . date('Ymdhis');
+                $this->output->writeln('Create index ' . $new_index);
+                $this->_elastic->indices()->create(['index' => $new_index]);
+                $this->output->writeln('Reindex ' . $index . ' in ' . $new_index);
+                $this->_elastic->reindex(['body' => ['source' => ['index' => $index], 'dest' => ['index' => $new_index]]]);
+                $this->output->writeln('Delete ' . $index);
+                $this->_elastic->indices()->delete(['index' => $index]);
+                $this->output->writeln('Create alias from ' . $new_index . ' to ' . $index);
+                $this->_elastic->indices()->putAlias([
+                    'index' => $new_index,
+                    'name' => $index,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * @param string $index
+     */
+    private function _checkIfTemplateExist(string $index): void
+    {
         if ($this->_elastic->indices()->existsTemplate(['name' => $index]) === true && $this->option('force') == false) {
             $anwser = $this->output->askQuestion(new Question('Template `' . $index . '` exists. Want to replace ? Y/n', 'n'));
             if ($anwser !== 'Y') {
@@ -69,7 +95,7 @@ class CreateCommand extends Command
      */
     private function _monitoringIndex()
     {
-        $this->_checkIfExist(config('elasticsearch.index.name'));
+        $this->_checkIfTemplateExist(config('elasticsearch.index.name'));
 
         // Update or create template
 
@@ -130,7 +156,9 @@ class CreateCommand extends Command
             ],
         ]);
 
-        $this->output->success(config('elasticsearch.index.name') . ' updated');
+        $this->output->success(config('elasticsearch.index.name') . ' template updated');
+
+        $this->_checkIfExist(IndexHelper::generateMonitoringIndex());
 
         return $this;
     }
@@ -140,14 +168,14 @@ class CreateCommand extends Command
      */
     private function _monitoringResultsIndex()
     {
-        $this->_checkIfExist(config('elasticsearch.index.name').'_' . config('elasticsearch.index.results.prefix'));
+        $this->_checkIfTemplateExist(config('elasticsearch.index.name') . '_' . config('elasticsearch.index.results.prefix'));
 
         $this->_elastic->indices()->putTemplate([
-            'name' => config('elasticsearch.index.name').'_' . config('elasticsearch.index.results.prefix'),
+            'name' => config('elasticsearch.index.name') . '_' . config('elasticsearch.index.results.prefix'),
             'body' => [
                 'order' => 0,
                 'index_patterns' => [
-                    config('elasticsearch.index.name').'_' . config('elasticsearch.index.results.prefix') . '-*',
+                    config('elasticsearch.index.name') . '_' . config('elasticsearch.index.results.prefix') . '-*',
                 ],
                 'settings' => [
                     'index' => [
@@ -184,7 +212,9 @@ class CreateCommand extends Command
             ],
         ]);
 
-        $this->output->success(config('elasticsearch.index.name').'_' . config('elasticsearch.index.results.prefix') . ' updated');
+        $this->output->success(config('elasticsearch.index.name') . '_' . config('elasticsearch.index.results.prefix') . ' template updated');
+
+        $this->_checkIfExist(IndexHelper::generateResultIndex());
 
         return $this;
     }
