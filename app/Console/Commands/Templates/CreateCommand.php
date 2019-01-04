@@ -129,13 +129,18 @@ class CreateCommand extends Command
                                 'enabled' => false,
                                 'dynamic' => true,
                             ],
-                            'condition' => [
+                            'conditions' => [
                                 'type' => 'object',
                                 'enabled' => false,
                                 'dynamic' => true,
                             ],
                             'throttle_period' => [
                                 'type' => 'keyword',
+                            ],
+                            'times' => [
+                                'type' => 'object',
+                                'enabled' => false,
+                                'dynamic' => true,
                             ],
                             'uuid' => [
                                 'type' => 'keyword',

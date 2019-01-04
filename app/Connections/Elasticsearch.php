@@ -16,7 +16,7 @@ class Elasticsearch extends Generic
     public function __construct(array $config)
     {
         $this->_config = $config;
-        $this->_requiredKeys = ['input' => ['index', 'type', 'frequence', 'mode', 'query'], 'condition', 'throttle_period', 'actions', 'enabled', 'uuid'];
+        $this->_requiredKeys = ['input' => ['index', 'type', 'frequence', 'mode', 'query'], 'conditions', 'throttle_period', 'actions', 'enabled', 'uuid'];
         $this->checkConfig();
         $this->generateQuery();
     }
@@ -65,13 +65,13 @@ class Elasticsearch extends Generic
      */
     public function condition(): bool
     {
-        reset($this->_config['condition']);
-        $mode = key($this->_config['condition']);
+        reset($this->_config['conditions']);
+        $mode = key($this->_config['conditions']);
         $class = '\App\Conditions\\' . ucfirst(strtolower($mode));
-        reset($this->_config['condition'][$mode]);
-        $method = key($this->_config['condition'][$mode]);
+        reset($this->_config['conditions'][$mode]);
+        $method = key($this->_config['conditions'][$mode]);
 
-        return $class::$method($this->_result, $this->_config['condition'][$mode][$method]);
+        return $class::$method($this->_result, $this->_config['conditions'][$mode][$method]);
     }
 
     /**
