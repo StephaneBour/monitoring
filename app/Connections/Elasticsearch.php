@@ -59,19 +59,27 @@ class Elasticsearch extends Generic
     }
 
     /**
-     * Check if the return fulfill the condition.
+     * Check if the return fulfill the conditions.
      *
      * @return bool
      */
-    public function condition(): bool
+    public function conditions(): bool
     {
-        reset($this->_config['conditions']);
-        $mode = key($this->_config['conditions']);
-        $class = '\App\Conditions\\' . ucfirst(strtolower($mode));
-        reset($this->_config['conditions'][$mode]);
-        $method = key($this->_config['conditions'][$mode]);
+        if (empty($this->_config['conditions'])) {
+            return false;
+        }
+        $status = true;
 
-        return $class::$method($this->_result, $this->_config['conditions'][$mode][$method]);
+        foreach ($this->_config['conditions'] as $mode => $methods) {
+            $class = '\App\Conditions\\' . ucfirst(strtolower($mode));
+            foreach ($methods as $method => $value) {
+                if ($class::$method($this->_result, $value) === false) {
+                    $status = false;
+                }
+            }
+        }
+
+        return $status;
     }
 
     /**
@@ -121,7 +129,7 @@ class Elasticsearch extends Generic
                 $this->updateCheckStatus(self::STATUS_WAITING);
                 $this->exec();
 
-                if ($this->condition()) {
+                if ($this->conditions()) {
                     $this->updateCheckStatus(self::STATUS_OK, $this->_result);
 
                     return true;

@@ -46,7 +46,7 @@ class ElasticsearchTest extends TestCase
     public function testCondition()
     {
         $this->connection->exec();
-        $this->assertTrue($this->connection->condition());
+        $this->assertTrue($this->connection->conditions());
     }
 
     public function testConfig()
