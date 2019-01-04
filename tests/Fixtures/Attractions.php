@@ -64,6 +64,10 @@ class Attractions
             'conditions' => [
                 'count' => [
                     'gt' => 0,
+                    'lt' => 100,
+                ],
+                'parse' => [
+                    'not_exists' => 'test',
                 ],
             ],
             'throttle_period' => '5s',
