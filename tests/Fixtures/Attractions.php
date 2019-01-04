@@ -61,7 +61,7 @@ class Attractions
                     ],
                 ],
             ],
-            'condition' => [
+            'conditions' => [
                 'count' => [
                     'gt' => 0,
                 ],
