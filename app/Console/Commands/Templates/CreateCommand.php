@@ -63,8 +63,18 @@ class CreateCommand extends Command
                 $this->_elastic->indices()->create(['index' => $new_index]);
                 $this->output->writeln('Reindex ' . $index . ' in ' . $new_index);
                 $this->_elastic->reindex(['body' => ['source' => ['index' => $index], 'dest' => ['index' => $new_index]]]);
-                $this->output->writeln('Delete ' . $index);
-                $this->_elastic->indices()->delete(['index' => $index]);
+                if ($this->_elastic->indices()->existsAlias(['name' => $index])) {
+                    $alias = $this->_elastic->indices()->getAlias(['name' => $index]);
+                    if (count($alias) > 0) {
+                        $alias = key($alias);
+                        $this->output->writeln('Delete alias ' . $alias . ' on ' . $index);
+                        $this->_elastic->indices()->deleteAlias(['index' => $alias, 'name' => $index]);
+                    }
+                }
+                if ($this->_elastic->indices()->exists(['index' => $index]) === true) {
+                    $this->output->writeln('Delete ' . $index);
+                    $this->_elastic->indices()->delete(['index' => $index]);
+                }
                 $this->output->writeln('Create alias from ' . $new_index . ' to ' . $index);
                 $this->_elastic->indices()->putAlias([
                     'index' => $new_index,
