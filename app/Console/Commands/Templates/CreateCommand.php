@@ -134,6 +134,12 @@ class CreateCommand extends Command
                             'enabled' => [
                                 'type' => 'boolean',
                             ],
+                            'one_server' => [
+                                'type' => 'boolean',
+                            ],
+                            'timeout' => [
+                                'type' => 'long',
+                            ],
                             'input' => [
                                 'type' => 'object',
                                 'enabled' => false,
