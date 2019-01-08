@@ -12,7 +12,7 @@ interface Connection
 
     public function checkThrottle(): bool;
 
-    public function condition(): bool;
+    public function conditions(): bool;
 
     public function exec();
 
