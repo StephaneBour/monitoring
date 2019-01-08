@@ -6,7 +6,7 @@ use App\Exceptions\Fail;
 use App\Helpers\SSLHelper;
 use Carbon\Carbon;
 
-class SSL extends Generic
+class Ssl extends Generic
 {
     /**
      * SSL constructor.
@@ -18,7 +18,7 @@ class SSL extends Generic
     public function __construct(array $config)
     {
         $this->_config = $config;
-        $this->_requiredKeys = ['input' => ['url', 'type', 'frequence', 'mode'], 'throttle_period', 'actions', 'enabled', 'uuid'];
+        $this->_requiredKeys = ['input' => ['url', 'type', 'mode'], 'throttle_period', 'actions', 'enabled', 'uuid'];
         $this->checkConfig();
     }
 
@@ -42,7 +42,7 @@ class SSL extends Generic
                         break;
                     case 'diff':
                         $this->_config['conditions'] = ['count' => ['gte' => $this->_config['input']['days']]];
-                        $date = Carbon::createFromTimestamp(SSLHelper::validFrom($this->_config['input']['url']));
+                        $date = Carbon::createFromTimestamp(SSLHelper::validTo($this->_config['input']['url']));
                         $this->_result = $date->diffInDays();
                         if ($this->_result <= $this->_config['input']['days']) {
                             throw new Fail('The SSL certificate expires in ' . $this->_result . ' days');

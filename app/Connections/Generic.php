@@ -131,23 +131,25 @@ class Generic implements Connection
      */
     public function launch(): bool
     {
+        $errors = [];
         if ($this->_config['enabled']) {
             if ($this->checkThrottle()) {
                 $this->updateCheckStatus(self::STATUS_WAITING);
                 try {
                     $this->exec();
+
+                    if ($this->conditions()) {
+                        $this->updateCheckStatus(self::STATUS_OK, $this->_result, $errors);
+
+                        return true;
+                    } else {
+                        $this->updateCheckStatus(self::STATUS_FAIL, $this->_result, $errors);
+
+                        return false;
+                    }
                 } catch (Fail $fail) {
-                    $this->_result['error'] = $fail->getMessage();
-
-                    return false;
-                }
-
-                if ($this->conditions()) {
-                    $this->updateCheckStatus(self::STATUS_OK, $this->_result);
-
-                    return true;
-                } else {
-                    $this->updateCheckStatus(self::STATUS_FAIL, $this->_result);
+                    $errors[] = $fail->getMessage();
+                    $this->updateCheckStatus(self::STATUS_FAIL, $this->_result, $errors);
 
                     return false;
                 }
@@ -162,7 +164,7 @@ class Generic implements Connection
     /**
      * @param string $status
      */
-    public function updateCheckStatus(string $status, $result = null)
+    public function updateCheckStatus(string $status, $result = null, array $errors = [])
     {
         $query = [
             'index' => IndexHelper::generateResultIndex(),
@@ -189,7 +191,8 @@ class Generic implements Connection
             ]);
 
             if (! empty($actually['_source']['status']) && $actually['_source']['status'] != $status) {
-                // Status change, launch alerts
+                // Launch alerts
+                $this->_launchAlerts($errors);
             }
             app('elasticsearch')->update([
                 'index' => IndexHelper::generateMonitoringIndex(),
@@ -203,6 +206,29 @@ class Generic implements Connection
             ]);
 
             app('elasticsearch')->indices()->refresh(['index' => IndexHelper::generateMonitoringIndex()]);
+        }
+    }
+
+    /**
+     * @param array $errors
+     */
+    private function _launchAlerts(array $errors = []): void
+    {
+        if (! empty($errors)) {
+            $content = implode(', ', $errors);
+        }
+
+        if (! empty($this->_config['actions'])) {
+            foreach ($this->_config['actions'] as $action => $config) {
+                logger('Launch alert for ' . $this->_config['uuid'] . ' : ' . $action . ' : ' . json_encode($config));
+                $class = '\App\Actions\\' . ucfirst($action);
+                if (isset($content)) {
+                    $config['content'] = $content;
+                }
+
+                $action = new $class($config);
+                $action->send();
+            }
         }
     }
 }

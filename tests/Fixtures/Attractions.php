@@ -74,12 +74,12 @@ class Attractions
             'actions' => [
                 'slack' => [
                     'color' => '#F00',
-                    'text' => 'Attention, plus de log des attractions disney',
+                    'content' => 'Attention, plus de log des attractions disney',
                 ],
                 'email' => [
                     'to' => 'stephane.bour@gmail.com',
                     'subject' => 'Attention, plus de log des attractions disney',
-                    'text' => 'Attention, plus de log des attractions disney',
+                    'content' => 'Attention, plus de log des attractions disney',
                 ],
             ],
         ];
