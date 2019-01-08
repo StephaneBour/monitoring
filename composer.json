@@ -16,7 +16,8 @@
     "friendsofphp/php-cs-fixer": "^2.13",
     "guzzlehttp/guzzle": "^6.3",
     "laravel/framework": "5.7.*",
-    "laravel/tinker": "^1.0"
+    "laravel/tinker": "^1.0",
+    "ext-openssl": "*"
   },
   "require-dev": {
     "beyondcode/laravel-dump-server": "^1.0",
