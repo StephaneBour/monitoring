@@ -8,13 +8,22 @@
                 <div class="card-header">Dashboard</div>
 
                 <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
-                    You are logged in!
+                    <table class="table table-hover table-light table-striped">
+                        <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>UUID</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($checks as $check)
+                        <tr>
+                            <td>{{ $check['_source']['status'] }}</td>
+                            <td>{{ $check['_source']['uuid'] }}</td>
+                        </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
