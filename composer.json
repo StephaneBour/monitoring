@@ -15,6 +15,8 @@
     "elasticsearch/elasticsearch": "^6.0",
     "fideloper/proxy": "^4.0",
     "friendsofphp/php-cs-fixer": "^2.13",
+    "gaufrette/ftp-adapter": "^0.4.0",
+    "gaufrette/phpseclib-sftp-adapter": "^0.4.0",
     "guzzlehttp/guzzle": "^6.3",
     "knplabs/gaufrette": "^0.8.0",
     "laravel/framework": "5.7.*",
