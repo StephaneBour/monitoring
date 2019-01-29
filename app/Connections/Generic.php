@@ -107,8 +107,14 @@ class Generic implements Connection
         foreach ($this->_config['conditions'] as $mode => $methods) {
             $class = '\App\Conditions\\' . ucfirst(strtolower($mode));
             foreach ($methods as $method => $value) {
-                if ($class::$method($this->_result, $value) === false) {
-                    $status = false;
+                if (is_string($method)) {
+                    if ($class::$method($this->_result, $value) === false) {
+                        $status = false;
+                    }
+                } else {
+                    if ($class::$value($this->_result) === false) {
+                        $status = false;
+                    }
                 }
             }
         }
