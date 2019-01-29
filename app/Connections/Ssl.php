@@ -33,7 +33,7 @@ class Ssl extends Generic
             case 'stillValid':
                 switch ($this->_config['input']['type']) {
                     case 'bool':
-                        $this->_config['conditions'] = ['bool' => ['isTrue']];
+                        $this->_config['conditions'] = ['boolean' => ['isTrue']];
                         $this->_result = SSLHelper::stillValid($this->_config['input']['url']);
                         break;
                     case 'date':
