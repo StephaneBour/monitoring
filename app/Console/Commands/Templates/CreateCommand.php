@@ -131,6 +131,10 @@ class CreateCommand extends Command
                                 'enabled' => false,
                                 'dynamic' => true,
                             ],
+                            'last_check' => [
+                                'type' => 'date',
+                                'format' => 'yyyy-MM-dd HH:mm:ss',
+                            ],
                             'enabled' => [
                                 'type' => 'boolean',
                             ],

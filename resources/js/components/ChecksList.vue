@@ -6,6 +6,7 @@
                 <th>Enabled</th>
                 <th>Status</th>
                 <th>UUID</th>
+                <th>Last check</th>
             </tr>
             </thead>
             <tbody>
@@ -17,11 +18,12 @@
                           :class="{'badge-danger': check._source.status === 'FAIL', 'badge-success': check._source.status === 'OK'}">{{ check._source.status }}</span>
                 </td>
                 <td>{{ check._source.uuid }}</td>
+                <td>{{ check._source.last_check }}</td>
             </tr>
             </tbody>
             <tfoot>
             <tr>
-                <td colspan="2">
+                <td colspan="4">
                     Status :
                     <button class="btn badge badge-light" :class="{'btn-outline-secondary': filters.status === null}"
                             @click.prevent="filters.status = null">ALL
@@ -35,7 +37,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="4">
                     Enabled :
                     <button class="btn badge badge-light" :class="{'btn-outline-secondary': filters.enabled === null}"
                             @click.prevent="filters.enabled = null">ALL

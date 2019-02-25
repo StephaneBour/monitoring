@@ -207,6 +207,7 @@ class Generic implements Connection
                 'body' => [
                     'doc' => [
                         'status' => $status,
+                        'last_check' => date('Y-m-d H:i:s'),
                     ],
                 ],
             ]);
